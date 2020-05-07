@@ -15,11 +15,27 @@ class TasksController extends Controller
      */
     public function index()
     {
+        // ログインしているかどうかをチェックして、ログイン中の場合、ログインしている人のtasksを取得
         $tasks = Task::all();
         
         return view('tasks.index', [
             'tasks' => $tasks,
         ]);
+        
+          $data = [];
+        if (\Auth::check()) {
+            $user = \Auth::user();
+            $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
+            
+            $data = [
+                'user' => $user,
+                'tasks' => $tasks,
+            ];
+        }
+        
+        // ログインしてなかったら、welcomeか、ログインしてください内容のviewを表示
+        
+         return view('welcome', $data);
     }
 
     /**
@@ -50,11 +66,18 @@ class TasksController extends Controller
         ]);
         
         $task = new Task;
+        $task->user_id = \Auth::id();
         $task->status = $request->status;
         $task->content = $request->content;
         $task->save();
 
         return redirect('/');
+        
+        $request->user()->microposts()->create([
+            'content' => $request->content,
+        ]);
+
+        return back();
     }
 
     /**
@@ -117,6 +140,14 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
+        $task = \App\Tasklist::find($id);
+        
+         if (\Auth::id() === $task->user_id) {
+            $task->delete();
+        }
+
+        return back();
+        
         $task = Task::find($id);
         $task->delete();
 
