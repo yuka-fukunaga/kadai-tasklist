@@ -16,11 +16,7 @@ class TasksController extends Controller
     public function index()
     {
         // ログインしているかどうかをチェックして、ログイン中の場合、ログインしている人のtasksを取得
-        $tasks = Task::all();
         
-        return view('tasks.index', [
-            'tasks' => $tasks,
-        ]);
         
           $data = [];
         if (\Auth::check()) {
@@ -46,10 +42,17 @@ class TasksController extends Controller
     public function create()
     {
         $task = new Task;
-
-        return view('tasks.create', [
+        
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.create', [
             'task' => $task,
         ]);
+        
+        }else{
+        
+            return redirect('/');
+        }
+        
     }
 
     /**
@@ -73,7 +76,7 @@ class TasksController extends Controller
 
         return redirect('/');
         
-        $request->user()->microposts()->create([
+        $request->user()->tasks()->create([
             'content' => $request->content,
         ]);
 
@@ -89,10 +92,19 @@ class TasksController extends Controller
     public function show($id)
     {
         $task = Task::find($id);
-
-        return view('tasks.show', [
+        
+        if (\Auth::id() === $task->user_id) {
+            return view('tasks.show', [
             'task' => $task,
         ]);
+        
+        }else{
+        
+            return redirect('/');
+        }
+
+       
+        
     }
 
     /**
@@ -105,9 +117,15 @@ class TasksController extends Controller
     {
         $task = Task::find($id);
 
-        return view('tasks.edit', [
+       if (\Auth::id() === $task->user_id) {
+            return view('tasks.edit', [
             'task' => $task,
         ]);
+        
+        }else{
+        
+            return redirect('/');
+        }
     }
 
     /**
@@ -140,16 +158,11 @@ class TasksController extends Controller
      */
     public function destroy($id)
     {
-        $task = \App\Tasklist::find($id);
+        $task = Task::find($id);
         
          if (\Auth::id() === $task->user_id) {
             $task->delete();
         }
-
-        return back();
-        
-        $task = Task::find($id);
-        $task->delete();
 
         return redirect('/');
     }
