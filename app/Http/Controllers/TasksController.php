@@ -18,7 +18,7 @@ class TasksController extends Controller
         // ログインしているかどうかをチェックして、ログイン中の場合、ログインしている人のtasksを取得
         
         
-          $data = [];
+        $data = [];
         if (\Auth::check()) {
             $user = \Auth::user();
             $tasks = $user->tasks()->orderBy('created_at', 'desc')->paginate(10);
@@ -43,6 +43,11 @@ class TasksController extends Controller
     {
         $task = new Task;
         
+        return view('tasks.create', [
+            'task' => $task,
+        ]);
+        
+        /*
         if (\Auth::id() === $task->user_id) {
             return view('tasks.create', [
             'task' => $task,
@@ -52,7 +57,7 @@ class TasksController extends Controller
         
             return redirect('/');
         }
-        
+        */
     }
 
     /**
